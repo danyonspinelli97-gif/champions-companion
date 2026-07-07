@@ -141,7 +141,7 @@ input[type="range"] { width: 100%; min-width: 120px; accent-color: var(--accent)
 input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
 
 button.primary {
-  background: var(--accent-strong); color: #fff; border: none;
+  background: var(--accent-strong); color: var(--accent-ink); border: none;
   border-radius: var(--r-sm); padding: 10px 16px; min-height: 44px;
   font-size: 14px; font-weight: 600; cursor: pointer; transition: filter .15s ease, transform .1s ease;
 }
@@ -304,7 +304,7 @@ table.stats tbody tr:hover { background: rgba(255,255,255,0.02); }
 }
 .seg.sm { padding: 6px 11px; min-height: 34px; font-size: 12px; }
 .seg:hover { background: var(--surface-3); }
-.seg.active { background: var(--accent-strong); border-color: var(--accent-strong); color: #fff; }
+.seg.active { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--accent-ink); }
 
 .type-row { display: flex; gap: 6px; flex-wrap: wrap; margin: var(--s2) 0 var(--s4); }
 .type-chip {
@@ -328,6 +328,7 @@ table.stats tbody tr:hover { background: rgba(255,255,255,0.02); }
   content-visibility: auto;            /* skip rendering off-screen cards */
   contain-intrinsic-size: 320px;       /* reserve height to avoid scroll jumps */
 }
+.dex-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(245,197,24,0.25); }
 .dex-card-top { display: flex; justify-content: space-between; align-items: center; }
 .dex-num { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .badge-mb {
@@ -384,7 +385,7 @@ table.stats tbody tr:hover { background: rgba(255,255,255,0.02); }
     background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
   }
   nav.tabs button .tab-icon svg { width: 18px; height: 18px; }
-  nav.tabs button.active { background: var(--accent-strong); color: #fff; border-color: var(--accent-strong); }
+  nav.tabs button.active { background: var(--accent-strong); color: var(--accent-ink); border-color: var(--accent-strong); }
   .sp-grid { grid-template-columns: 1fr 1fr; }
   .usage-grid { grid-template-columns: repeat(2, 1fr); }
   .tb-grid { grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); }
