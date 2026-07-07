@@ -327,7 +327,9 @@ table.stats tbody tr:hover { background: rgba(255,255,255,0.02); }
   display: flex; flex-direction: column; gap: var(--s2);
   content-visibility: auto;            /* skip rendering off-screen cards */
   contain-intrinsic-size: 320px;       /* reserve height to avoid scroll jumps */
+  cursor: pointer;
 }
+.dex-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .dex-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(245,197,24,0.25); }
 .dex-card-top { display: flex; justify-content: space-between; align-items: center; }
 .dex-num { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -356,6 +358,32 @@ table.stats tbody tr:hover { background: rgba(255,255,255,0.02); }
   text-align: center; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums;
 }
 .dex-bst strong { color: var(--text); }
+
+/* ---- Pokémon detail overlay ---------------------------------------------
+   Mobile: full-screen modal. Desktop (see @media below): right-side panel
+   over a dimmed backdrop. */
+.detail-backdrop {
+  position: fixed; inset: 0; z-index: 60;
+  background: var(--bg);
+  overflow: hidden;
+}
+.detail-panel {
+  width: 100%; height: 100%;
+  overflow-y: auto; overflow-x: hidden;
+  background: var(--surface);
+  padding: var(--s4) var(--s4) var(--s6);
+}
+.detail-panel-head { display: flex; justify-content: flex-end; align-items: center; margin-bottom: var(--s2); }
+.detail-sprite { display: flex; justify-content: center; padding: var(--s2) 0; }
+.detail-name { text-align: center; margin: 0 0 var(--s3); font-size: 20px; }
+.detail-list { list-style: none; margin: 0 0 var(--s2); padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.detail-list li {
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+  border-radius: var(--r-sm); padding: 6px 10px; font-size: 13px;
+}
+.detail-list.movepool { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+.detail-list.movepool li { flex: 0 0 auto; }
+.matchup-row { display: flex; align-items: center; gap: var(--s2); margin-bottom: 6px; flex-wrap: wrap; }
 
 /* ---- Combobox ----------------------------------------------------------- */
 .combobox { position: relative; }
@@ -390,6 +418,16 @@ table.stats tbody tr:hover { background: rgba(255,255,255,0.02); }
   .usage-grid { grid-template-columns: repeat(2, 1fr); }
   .tb-grid { grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); }
   .tb-body { grid-template-columns: 1.1fr 0.9fr; }
+
+  .detail-backdrop {
+    background: rgba(6,9,20,0.6);
+    display: flex; justify-content: flex-end;
+  }
+  .detail-panel {
+    width: 100%; max-width: 440px;
+    border-left: 1px solid var(--border);
+    box-shadow: var(--sh-3);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

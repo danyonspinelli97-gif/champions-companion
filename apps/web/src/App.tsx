@@ -5,6 +5,7 @@ import { DamageCalculator } from "./components/DamageCalculator.js";
 import { TeamBuilder } from "./components/TeamBuilder.js";
 import { MetaDashboard } from "./components/MetaDashboard.js";
 import { Pokedex } from "./components/Pokedex.js";
+import { PokemonDetail } from "./components/PokemonDetail.js";
 
 type Tab = "dex" | "stats" | "damage" | "team" | "meta";
 
@@ -49,6 +50,7 @@ const TABS: { id: Tab; label: string }[] = [
 export function App() {
   const { data, error } = useChampionsData();
   const [tab, setTab] = useState<Tab>("dex");
+  const [detail, setDetail] = useState<string | null>(null);
 
   return (
     <div className="app">
@@ -91,12 +93,16 @@ export function App() {
 
         {data && (
           <>
-            {tab === "dex" && <Pokedex data={data} />}
+            {tab === "dex" && <Pokedex data={data} onOpenDetail={setDetail} />}
             {tab === "stats" && <StatCalculator data={data} />}
             {tab === "damage" && <DamageCalculator data={data} />}
             {tab === "team" && <TeamBuilder data={data} />}
             {tab === "meta" && <MetaDashboard data={data} />}
           </>
+        )}
+
+        {detail && data && data.byName.get(detail) && (
+          <PokemonDetail species={data.byName.get(detail)!} data={data} onClose={() => setDetail(null)} />
         )}
       </main>
     </div>
