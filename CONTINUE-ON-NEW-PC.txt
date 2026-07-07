@@ -1,0 +1,159 @@
+========================================================================
+ CHAMPIONS COMPANION — MOVE / CONTINUE GUIDE
+ (How to pick this project back up on a new PC and a new Claude account)
+========================================================================
+
+WHAT THIS IS
+------------
+"Champions Companion" is a competitive Pokemon CHAMPIONS team-building /
+battle web app (a PWA you can install on a phone). Tools: Pokedex, Stat
+Calculator, Damage Calculator, Team Builder (with meta suggestions, a
+"recommended set" button, and saving up to 5 teams behind a login), and a
+Meta dashboard. Deployed as a static site on Netlify; accounts via Supabase.
+
+CHAMPIONS IS NOT MAINLINE POKEMON:
+  - Fixed Level 50. IVs are always 31 (no IV inputs).
+  - EVs -> STAT POINTS (SP): 66 total, max 32/stat, 1 SP = +1 stat at L50.
+  - Natures -> STAT ALIGNMENTS (21; only Serious is neutral).
+  - Only fully-evolved species are legal.
+
+
+########################################################################
+ COMMAND CHEAT SHEET  (Windows Command Prompt / cmd)
+########################################################################
+First, go to the project folder (change the path to where you unzipped it):
+
+    cd /d "C:\Users\YOU\Documents\champions-companion"
+
+--- ONE-TIME, on a fresh PC -------------------------------------------
+    npm install
+
+--- RE-FETCH ALL DATA (roster, meta, dex, exports) --------------------
+Run these in order. The first run of each hits the network (a few minutes);
+they cache afterward. This is also what you run after any roster change.
+
+    npm run seed
+    npm run seed:meta
+    npm run export:web
+    npm run export:dex
+
+  What each does:
+    npm run seed        -> Champions roster + type chart + movepools (SQLite cache)
+    npm run seed:meta   -> usage/meta data from championsbattledata
+    npm run export:web  -> writes apps\web\public\data\*.json (species, meta,
+                           typechart, ruleset, regulations)  <-- app reads these
+    npm run export:dex  -> full National Dex -> apps\web\public\data\dex.json
+
+  (If meta for a Pokemon looks empty after changing the roster, just re-run:
+       npm run seed:meta
+       npm run export:web )
+
+--- RUN LOCALLY (preview in a browser) --------------------------------
+    npm run web
+  then open  http://localhost:5173
+
+--- REDEPLOY TO THE LIVE SITE (Netlify) -------------------------------
+    npm run export:web
+    npm run export:dex
+    npm run build --workspace @champions/web
+    npx netlify login                          (first time on a new PC only)
+    npx netlify deploy --dir=apps/web/dist --prod
+
+  Notes:
+    * The build output is apps\web\dist — deploy must use --dir=apps/web/dist.
+    * If prompted "select the project", choose  @champions/web.
+    * Your live site is  https://pkmchmpvgc.netlify.app
+    * If you only changed CODE (not data), you can skip the two export
+      commands and just run the build + deploy.
+    * On Netlify, also set env vars VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+      (Site settings -> Environment variables) OR keep building locally with
+      apps\web\.env present (which is what you've been doing).
+########################################################################
+
+
+PREREQUISITES ON THE NEW PC
+---------------------------
+  1. Node.js 22.5+  (needed for the built-in node:sqlite used by seed).
+     Check:  node --version
+  2. npm (comes with Node).
+  3. A code editor (VS Code recommended).
+  4. Internet access (seed pulls from PokeAPI + championsbattledata).
+
+
+SETUP STEPS
+-----------
+  1. Unzip champions-companion.zip (e.g. to Documents\champions-companion).
+  2. Open cmd in that folder (the one with package.json).
+  3. Run the COMMAND CHEAT SHEET above: npm install, then the data + run/deploy
+     commands as needed. The exported data (apps\web\public\data) is already in
+     the zip, so you can run the app straight away and only re-fetch data when
+     you want it refreshed.
+
+  npm-audit note: you'll see a few "vulnerabilities" — they are in build
+  tooling, not the shipped app. Do NOT run "npm audit fix --force".
+
+
+ACCOUNTS + SAVING TEAMS (SUPABASE)
+----------------------------------
+  - Your Supabase PROJECT is in the cloud, so login + saved teams survive the
+    move. Nothing to reinstall.
+  - Your keys are in apps\web\.env (included in this zip). They are the PUBLIC
+    url + anon key (safe to ship). NEVER add the service_role key anywhere.
+  - The database table + row-level-security policies already exist in Supabase
+    (the SQL is in README.md under "Save teams"). Only re-run that SQL if you
+    create a brand-new Supabase project (then update apps\web\.env with the new
+    url + anon key).
+
+
+CONTINUING WITH A NEW CLAUDE ACCOUNT
+------------------------------------
+A fresh Claude has no memory of this project. To get it up to speed:
+  1. Open this project folder in Claude (Cowork/desktop) so it can read files.
+  2. Say: "Read README.md and CONTINUE-ON-NEW-PC.txt in this project, then help
+     me continue." README.md has the full architecture + data-source notes.
+  3. Make sure it understands (all in README.md):
+     - Champions mechanics (SP / alignments / no-IVs / final-evo) — NOT mainline.
+     - Data sources: PokeAPI (base stats/types/moves), championsbattledata
+       (Champions roster + usage; attribution required, shown in-app). Do NOT
+       scrape Serebii.
+     - Monorepo: packages/{calc-core, champions-overlay, ruleset-config,
+       team-builder}; apps/web (React+Vite PWA); scripts/ (seed + export);
+       data/sources (adapters). Regulations are JSON in
+       packages/ruleset-config/rulesets (reg-m-b.json, reg-m-a.json).
+
+
+PROJECT STRUCTURE
+-----------------
+  packages/calc-core         stats, damage, speed, spread, type chart (tested)
+  packages/champions-overlay no-IV, final-evo pool, base-stat inversion
+  packages/ruleset-config    regulation JSON (M-B, M-A) + schema/validator
+  packages/team-builder      legality, analysis, meta recommender, metaSet
+  apps/web                   React + TS + Vite PWA (all UI)
+  apps/web/src/lib           supabase.ts, auth.tsx, teams.ts (accounts)
+  data/sources               pokeapi + championsbattledata adapters
+  data/cache                 local SQLite + raw cache (regenerable; NOT in zip)
+  scripts                    seed.ts, export-web-data.ts, export-dex.ts, etc.
+  apps/web/public/data       exported JSON the app fetches at runtime (in zip)
+
+
+STATE — DONE
+------------
+  [x] Stat calc + formula (verified), doubles damage calc (verified)
+  [x] Team builder: legality, analysis, meta suggestions, recommended-set
+      button, searchable legal-only picker, ability + legal-items dropdowns
+  [x] Meta dashboard (Top-10 + search), Pokedex card grid (M-B/M-A/All)
+  [x] PWA + original icon/logo
+  [x] Regulations M-B (224 legal, 148 items) + M-A (186 legal) as config
+  [x] Accounts + save up to 5 teams (Supabase)
+  [x] Basculegion / form-slug roster fix
+
+STATE — PENDING / VERIFY
+------------------------
+  [ ] Legal lists (species/items) are community-sourced ("inferred") — confirm
+      vs the in-game list, then set provenance to "verified" in the JSON.
+  [ ] teraAllowed, restrictedLimit, ban lists in reg-m-b.json are PLACEHOLDERS.
+  [ ] Allowed-MOVES list intentionally omitted (movepool checks already flag
+      illegal moves). Can add later in small chunks.
+  [ ] apps/api (shared backend) + tournament feed not built.
+  [ ] After roster changes, re-run: npm run seed:meta && npm run export:web
+========================================================================

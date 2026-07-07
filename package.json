@@ -1,0 +1,25 @@
+{
+  "name": "champions-companion",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pokémon Champions competitive team-building and battle companion (PWA-first, mobile-ready).",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "verify:formula": "node scripts/verify-formula.mjs",
+    "seed": "node --experimental-sqlite --import tsx scripts/seed.ts",
+    "seed:meta": "node --experimental-sqlite --import tsx scripts/seed.ts --meta",
+    "export:web": "node --experimental-sqlite --import tsx scripts/export-web-data.ts",
+    "export:dex": "node --import tsx scripts/export-dex.ts",
+    "web": "npm run dev --workspace @champions/web"
+  },
+  "devDependencies": {
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  },
+  "license": "MIT"
+}
