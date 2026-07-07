@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
+import { nanoid } from "nanoid";
 import {
   checkTeam,
   legalSpeciesPool,
@@ -26,7 +27,7 @@ const prettify = (slug: string) =>
   slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
 function newMember(species: string): TeamMember {
-  return { species, item: "", ability: "", alignmentId: "serious", moves: [], sp: emptySp(), teraType: null };
+  return { id: nanoid(8), species, item: "", ability: "", alignmentId: "serious", moves: [], sp: emptySp(), teraType: null };
 }
 
 export function TeamBuilder({ data }: { data: ChampionsData }) {
@@ -106,7 +107,7 @@ export function TeamBuilder({ data }: { data: ChampionsData }) {
       <div className="tb-grid">
         {members.map((m, i) => (
           <MemberEditor
-            key={i}
+            key={m.id}
             index={i}
             member={m}
             data={data}
@@ -244,7 +245,7 @@ function MemberEditor({
   const addableMoves = (species?.movepool ?? []).filter((mv) => !member.moves.includes(mv));
 
   return (
-    <div className="tb-card">
+    <div className="tb-card" data-testid="member-card">
       <div className="tb-card-head">
         <Sprite species={species} size={52} />
         <div className="tb-head-main">

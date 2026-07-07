@@ -32,6 +32,10 @@ export interface SpeciesData {
 export type SpeciesProvider = (slug: string) => SpeciesData | null;
 
 export interface TeamMember {
+  /** Stable per-slot id (not the species slug) — React keys and persistence
+   * identity hang off this so reordering/removing slots never misattributes
+   * a member's local UI state to a neighboring member. */
+  id: string;
   species: string; // slug, e.g. "garchomp"
   item?: string;
   ability?: string;
