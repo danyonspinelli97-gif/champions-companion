@@ -58,6 +58,12 @@ code {
   border-radius: 6px; padding: 1px 6px; font-size: 0.85em;
 }
 
+/* ---- Accessibility: keyboard focus -------------------------------------- */
+:where(button, [role="button"], a, input, select):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ---- App shell ---------------------------------------------------------- */
 .app {
   max-width: var(--maxw);
@@ -235,6 +241,8 @@ table.stats tbody tr:hover { background: rgba(255,255,255,0.02); }
 }
 .icon-btn.sm { width: 24px; height: 24px; font-size: 11px; }
 .icon-btn:hover { color: var(--bad); border-color: var(--bad); }
+/* Neutral hover for non-destructive icon buttons (e.g. detail "close"), overriding the red above. */
+.icon-btn.close:hover { color: var(--accent); border-color: var(--text); }
 
 .tb-body { display: grid; grid-template-columns: 1fr; gap: var(--s3); }
 .tb-left { display: flex; flex-direction: column; gap: 6px; }

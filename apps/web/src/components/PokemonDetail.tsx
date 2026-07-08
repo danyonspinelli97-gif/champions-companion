@@ -28,6 +28,8 @@ export function PokemonDetail({
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   // Remember what had focus before opening, focus the dialog, and restore on close.
   useEffect(() => {
@@ -38,11 +40,13 @@ export function PokemonDetail({
     };
   }, []);
 
-  // Esc-to-close and a simple focus trap while the dialog is open.
+  // Esc-to-close and a simple focus trap while the dialog is open. Reads onClose via a
+  // ref (kept fresh above) so this listener is attached once per mount instead of
+  // re-subscribing on every parent re-render that passes a new onClose closure.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== "Tab") return;
@@ -62,7 +66,7 @@ export function PokemonDetail({
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+  }, []);
 
   const matchups = typeMatchups(species, data.chart);
   const weak = [...matchups.weak].sort();
@@ -87,7 +91,7 @@ export function PokemonDetail({
       >
         <div className="detail-panel-head">
           <span className="dex-num">{species.num ? pad(species.num) : ""}</span>
-          <button className="icon-btn" title="Close" aria-label="Close" onClick={onClose} ref={closeRef}>
+          <button className="icon-btn close" title="Close" aria-label="Close" onClick={onClose} ref={closeRef}>
             <X size={16} />
           </button>
         </div>
