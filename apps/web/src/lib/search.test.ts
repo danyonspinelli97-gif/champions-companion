@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { searchIndex } from "./search";
+import { searchIndex } from "./search.js";
 const species = [
   { name: "garchomp", displayName: "Garchomp", num: 445, types: ["dragon","ground"] },
   { name: "pikachu", displayName: "Pikachu", num: 25, types: ["electric"] },

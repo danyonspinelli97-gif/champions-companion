@@ -26,6 +26,7 @@ export function CommandPalette({
   const [activeIndex, setActiveIndex] = useState(0);
   const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
 
   const bySlug = useMemo(() => new Map(species.map((s) => [s.name, s])), [species]);
   const results = useMemo(() => searchIndex(query, species, sections), [query, species, sections]);
@@ -35,8 +36,13 @@ export function CommandPalette({
     setActiveIndex(0);
   }, [query]);
 
+  // Remember what had focus before opening, focus the input, and restore on close.
   useEffect(() => {
+    previouslyFocused.current = document.activeElement as HTMLElement | null;
     inputRef.current?.focus();
+    return () => {
+      previouslyFocused.current?.focus?.();
+    };
   }, []);
 
   const select = (r: Result | undefined) => {
@@ -50,6 +56,7 @@ export function CommandPalette({
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
+        e.stopPropagation();
         onClose();
         return;
       }
@@ -83,8 +90,8 @@ export function CommandPalette({
         first.focus();
       }
     };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
   }, [results, activeIndex, onClose]);
 
   return (

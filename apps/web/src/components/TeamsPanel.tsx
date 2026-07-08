@@ -4,6 +4,7 @@ import type { TeamMember } from "@champions/team-builder";
 import { useAuth } from "../lib/auth.js";
 import { authConfigured } from "../lib/supabase.js";
 import { listTeams, saveTeam, deleteTeam, MAX_TEAMS, type SavedTeam } from "../lib/teams.js";
+import { X } from "./icons.js";
 
 export function TeamsPanel({
   members,
@@ -149,7 +150,9 @@ function SavedTeams({
               >
                 {t.name} <span className="muted">({t.data.length})</span>
               </button>
-              <button className="icon-btn sm" title="Delete" onClick={() => doDelete(t.id)}>✕</button>
+              <button className="icon-btn sm" title="Delete" onClick={() => doDelete(t.id)}>
+                <X size={12} />
+              </button>
             </li>
           ))}
         </ul>
