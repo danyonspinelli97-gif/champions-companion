@@ -25,12 +25,14 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        # The previous step already built the app, so --no-build makes this a
-        # pure upload of the prebuilt dir. Without it, netlify-cli runs the
-        # site's UI-configured build pipeline — which fails on the workspaces
-        # monorepo (project ambiguity + doubled publish path) and would burn
-        # Netlify build minutes we deliberately avoid.
-        run: npx --yes netlify-cli deploy --dir=apps/web/dist --prod --no-build
+        # Two independent monorepo hazards, so two guards:
+        #  - working-directory: apps/web  -> deploy from the single web package
+        #    so netlify-cli doesn't error with "multiple projects detected".
+        #  - --no-build -> the app is already built in the prior step; skip the
+        #    site's UI-configured build pipeline (avoids a doubled publish path
+        #    and Netlify build minutes).
+        working-directory: apps/web
+        run: npx --yes netlify-cli deploy --dir=dist --prod --no-build
       - name: Commit refreshed meta
         run: |
           git config user.name "meta-bot"
