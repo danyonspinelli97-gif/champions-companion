@@ -41,12 +41,30 @@ export function TeamBuilder({ data }: { data: ChampionsData }) {
   const [members, setMembers] = useState<TeamMember[]>([]);
 
   const team: Team = { members };
-  const report = useMemo(() => checkTeam(team, data.ruleset, provider), [members, data]);
+
+  // Meta usage is keyed by the app species slug, but not every form/Mega has its
+  // own usage (championsbattledata tracks some forms only at the base species).
+  // Fall back to the member's base species so rec-set + suggestions still work.
+  const metaProvider: MetaProvider = (slug) => {
+    if (!data.meta) return null;
+    if (data.meta.bySpecies[slug]) return data.meta.bySpecies[slug];
+    const base = data.byName.get(slug)?.baseName;
+    if (base) {
+      const baseSlug = base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      return data.meta.bySpecies[baseSlug] ?? null;
+    }
+    return null;
+  };
+  // A move in a species' usage data is empirically Champions-legal, so feed usage
+  // moves into legality to suppress mainline-movepool false positives.
+  const getMetaMoves = (slug: string) =>
+    rowsByCategory(metaProvider(slug) ?? [], "move").map((r) => r.name);
+
+  const report = useMemo(() => checkTeam(team, data.ruleset, provider, getMetaMoves), [members, data]);
   const tiers = useMemo(() => speedTiers(team, provider), [members, data]);
   const defense = useMemo(() => defensiveReport(team, provider, data.chart, 3), [members, data]);
   const coverage = useMemo(() => coverageReport(team, provider, data.chart), [members, data]);
 
-  const metaProvider: MetaProvider = (slug) => data.meta?.bySpecies[slug] ?? null;
   const suggestions = useMemo(
     () => (data.meta ? recommendTeammates(members.map((m) => m.species), metaProvider, { limit: 8 }) : []),
     [members, data]

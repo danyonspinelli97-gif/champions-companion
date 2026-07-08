@@ -61,7 +61,14 @@ const MAX_MOVES = 4;
 export function checkTeam(
   team: Team,
   cfg: RulesetConfig,
-  getSpecies: SpeciesProvider
+  getSpecies: SpeciesProvider,
+  /**
+   * Optional: the moves that appear in a species' Champions usage data. Any
+   * move listed here is empirically legal, so it overrides a mainline-movepool
+   * miss (which is known-imperfect for Champions). Returns names/slugs; matched
+   * case-insensitively.
+   */
+  getMetaMoves?: (slug: string) => string[]
 ): LegalityReport {
   const issues: LegalityIssue[] = [];
   const push = (
@@ -109,7 +116,7 @@ export function checkTeam(
     );
 
   // --- Per-member ---------------------------------------------------------
-  team.members.forEach((m, i) => checkMember(m, i, cfg, getSpecies, push));
+  team.members.forEach((m, i) => checkMember(m, i, cfg, getSpecies, push, getMetaMoves));
 
   const legal = !issues.some((x) => x.severity === "error");
   return { legal, issues };
@@ -120,7 +127,8 @@ function checkMember(
   i: number,
   cfg: RulesetConfig,
   getSpecies: SpeciesProvider,
-  push: (mi: number | null, sev: "error" | "warning", code: string, msg: string) => void
+  push: (mi: number | null, sev: "error" | "warning", code: string, msg: string) => void,
+  getMetaMoves?: (slug: string) => string[]
 ): void {
   if (!m.species || !m.species.trim()) {
     push(i, "warning", "no-species", "Select a Pokémon for this slot.");
@@ -161,6 +169,8 @@ function checkMember(
   // Moves: movepool membership, ban list, count, duplicates.
   const movepool = new Set(species.movepool.map((s) => s.toLowerCase()));
   const movepoolKnown = movepool.size > 0;
+  // Moves proven legal by usage data (Champions-accurate), normalised for match.
+  const metaMoves = new Set((getMetaMoves?.(m.species) ?? []).map(normName));
   const bannedMoves = new Set(cfg.bannedMoves.value.map((s) => s.toLowerCase()));
   const allowedMoves =
     cfg.allowedMoves && cfg.allowedMoves.value.length
@@ -175,10 +185,12 @@ function checkMember(
     push(i, "warning", "movepool-unknown", `Movepool for ${species.displayName} is unavailable — moves not validated.`);
   for (const mv of m.moves) {
     const key = mv.toLowerCase();
-    // Only flag illegal moves when we actually know the movepool, to avoid
-    // false positives on forms whose movepool couldn't be sourced.
-    if (movepoolKnown && !movepool.has(key))
-      push(i, "error", "illegal-move", `${species.displayName} cannot learn "${mv}".`);
+    // The mainline (PokéAPI) movepool is known-imperfect for Champions, which
+    // has its own per-regulation learnsets. So a movepool miss is only advisory,
+    // and a move that appears in usage data is treated as empirically legal
+    // (no issue at all). True bans below stay hard errors.
+    if (movepoolKnown && !movepool.has(key) && !metaMoves.has(normName(mv)))
+      push(i, "warning", "unverified-move", `Couldn't verify "${mv}" for ${species.displayName} — not in its known movepool.`);
     if (bannedMoves.has(key))
       push(i, "error", "banned-move", `Move "${mv}" is banned in ${cfg.name}.`);
     if (allowedMoves && !allowedMoves.has(normName(mv)))

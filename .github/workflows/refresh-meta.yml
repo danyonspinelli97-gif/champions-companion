@@ -1,0 +1,35 @@
+name: Refresh meta & deploy (weekly)
+on:
+  schedule:
+    # Weekly, Mondays 06:00 UTC. Kept weekly (not daily) to stay within
+    # GitHub Actions / Netlify free-tier build limits — usage data moves slowly.
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm install
+      - run: npm run refresh:meta
+      - name: Build web
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: npm run build --workspace @champions/web
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: npx --yes netlify-cli deploy --dir=apps/web/dist --prod
+      - name: Commit refreshed meta
+        run: |
+          git config user.name "meta-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add apps/web/public/data/meta.json
+          git commit -m "chore: weekly meta refresh" || echo "no changes"
+          git push

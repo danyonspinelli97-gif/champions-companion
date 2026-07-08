@@ -133,9 +133,22 @@ describe("checkTeam legality", () => {
     );
     const codes = r.issues.map((x) => x.code);
     expect(codes).toContain("illegal-ability");
-    expect(codes).toContain("illegal-move");
+    // A movepool miss (mainline movepool is imperfect for Champions) is advisory.
+    expect(codes).toContain("unverified-move");
     expect(codes).toContain("sp-cap");
     expect(r.legal).toBe(false);
+  });
+
+  it("does not flag a move proven legal by usage data", () => {
+    // "surf" is not in Garchomp's mainline movepool: without usage it's an
+    // unverified-move warning; usage data listing it clears the flag entirely.
+    const member = { ...legalChomp, moves: ["earthquake", "dragon-claw", "protect", "surf"] };
+    const withoutUsage = checkTeam({ members: [member] }, cfg, provider);
+    expect(withoutUsage.issues.some((x) => x.code === "unverified-move")).toBe(true);
+    expect(withoutUsage.legal).toBe(true); // advisory only, never a hard error
+    const withUsage = checkTeam({ members: [member] }, cfg, provider, () => ["Surf"]);
+    expect(withUsage.issues.some((x) => x.code === "unverified-move")).toBe(false);
+    expect(withUsage.legal).toBe(true);
   });
 
   it("blocks Tera when the ruleset disallows it", () => {

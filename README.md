@@ -221,6 +221,34 @@ npx cap open android   # build/run the APK from Android Studio onto the Pixel 9
 Because the PWA already wraps the shared TS packages, Capacitor reuses the same
 build with no code changes.
 
+## Keep meta data fresh automatically (weekly poller)
+
+The live site's usage/meta data can refresh on its own — no PC or Claude session
+needed — via GitHub Actions, which re-pulls usage and redeploys to Netlify.
+
+- Workflow: `.github/workflows/refresh-meta.yml` runs **weekly** (Mondays 06:00
+  UTC) and on manual dispatch. It's intentionally weekly, not daily, so the
+  scheduled build stays comfortably inside GitHub Actions / Netlify free-tier
+  limits — usage data moves slowly. To change the cadence, edit the `cron:` line.
+- What runs: `npm run refresh:meta` (script `scripts/refresh-meta.ts`) reads the
+  committed `apps/web/public/data/species.json`, re-pulls Doubles usage per
+  species from championsbattledata, and rewrites `apps/web/public/data/meta.json`
+  (only usage — much lighter than `seed:meta`, which rebuilds the whole roster).
+  Then it builds the web app, deploys to Netlify, and commits the refreshed JSON.
+- Run it locally any time: `npm run refresh:meta`.
+
+**One-time owner setup:**
+1. This project must be a GitHub repo, and `apps/web/public/data/*.json` must be
+   committed (they are not git-ignored; `.env` stays ignored).
+2. Add these GitHub repo **secrets** (Settings → Secrets and variables → Actions):
+   - `NETLIFY_AUTH_TOKEN` — Netlify → User settings → Applications → new token.
+   - `NETLIFY_SITE_ID` — Netlify site → Site configuration → Site ID.
+   - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` — the same public values as
+     `apps/web/.env` (so the deployed build keeps auth; the anon key is
+     public-safe).
+3. Trigger it once from the **Actions** tab (Run workflow) to confirm it deploys;
+   the weekly schedule then runs on its own.
+
 ## Save teams (accounts, optional)
 
 Saving teams is gated behind a login, backed by **Supabase** (free). The app
