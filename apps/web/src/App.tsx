@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useChampionsData } from "./data.js";
 import { StatCalculator } from "./components/StatCalculator.js";
 import { DamageCalculator } from "./components/DamageCalculator.js";
@@ -6,6 +6,8 @@ import { TeamBuilder } from "./components/TeamBuilder.js";
 import { MetaDashboard } from "./components/MetaDashboard.js";
 import { Pokedex } from "./components/Pokedex.js";
 import { PokemonDetail } from "./components/PokemonDetail.js";
+import { CommandPalette } from "./components/CommandPalette.js";
+import { Search } from "./components/icons.js";
 
 type Tab = "dex" | "stats" | "damage" | "team" | "meta";
 
@@ -51,6 +53,19 @@ export function App() {
   const { data, error } = useChampionsData();
   const [tab, setTab] = useState<Tab>("dex");
   const [detail, setDetail] = useState<string | null>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // Global ⌘K / Ctrl-K shortcut to toggle the search palette.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <div className="app">
@@ -62,6 +77,17 @@ export function App() {
             {data ? `${data.ruleset.name}` : "loading…"}
           </span>
         </div>
+        <button
+          type="button"
+          className="header-search"
+          aria-label="Search"
+          title="Search (⌘K)"
+          onClick={() => setPaletteOpen(true)}
+        >
+          <Search size={16} />
+          <span className="hs-label">Search</span>
+          <kbd className="hs-kbd">⌘K</kbd>
+        </button>
       </header>
 
       <nav className="tabs" aria-label="Sections">
@@ -103,6 +129,22 @@ export function App() {
 
         {detail && data && data.byName.get(detail) && (
           <PokemonDetail species={data.byName.get(detail)!} data={data} onClose={() => setDetail(null)} />
+        )}
+
+        {paletteOpen && data && (
+          <CommandPalette
+            species={data.species}
+            sections={TABS}
+            onPickPokemon={(slug) => {
+              setPaletteOpen(false);
+              setDetail(slug);
+            }}
+            onPickSection={(id) => {
+              setPaletteOpen(false);
+              setTab(id as Tab);
+            }}
+            onClose={() => setPaletteOpen(false)}
+          />
         )}
       </main>
     </div>

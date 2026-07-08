@@ -29,3 +29,6 @@ export const ChevronDown = (p: SVGProps<SVGSVGElement> & { size?: number }) => (
 export const ChevronUp = (p: SVGProps<SVGSVGElement> & { size?: number }) => (
   <svg {...base(p)}><polyline points="6 15 12 9 18 15" /></svg>
 );
+export const Search = (p: SVGProps<SVGSVGElement> & { size?: number }) => (
+  <svg {...base(p)}><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+);
