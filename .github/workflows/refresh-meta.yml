@@ -25,7 +25,10 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: npx --yes netlify-cli deploy --dir=apps/web/dist --prod
+        # Run from the single web package so netlify-cli doesn't try (and fail)
+        # to pick a project out of the npm-workspaces monorepo root.
+        working-directory: apps/web
+        run: npx --yes netlify-cli deploy --dir=dist --prod
       - name: Commit refreshed meta
         run: |
           git config user.name "meta-bot"
