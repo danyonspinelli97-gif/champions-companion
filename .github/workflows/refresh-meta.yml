@@ -25,14 +25,15 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        # Two independent monorepo hazards, so two guards:
-        #  - working-directory: apps/web  -> deploy from the single web package
-        #    so netlify-cli doesn't error with "multiple projects detected".
-        #  - --no-build -> the app is already built in the prior step; skip the
-        #    site's UI-configured build pipeline (avoids a doubled publish path
-        #    and Netlify build minutes).
+        # Three monorepo hazards, three guards:
+        #  - working-directory: apps/web  -> cwd is what netlify-cli's project
+        #    detection keys off, so this avoids "multiple projects detected".
+        #  - --no-build -> app is already built in the prior step; skip the
+        #    site's UI build pipeline (avoids Netlify build minutes).
+        #  - --dir=apps/web/dist -> --dir is resolved relative to the git root
+        #    (not cwd), so it must be the full path from root, not just "dist".
         working-directory: apps/web
-        run: npx --yes netlify-cli deploy --dir=dist --prod --no-build
+        run: npx --yes netlify-cli deploy --dir=apps/web/dist --prod --no-build
       - name: Commit refreshed meta
         run: |
           git config user.name "meta-bot"
