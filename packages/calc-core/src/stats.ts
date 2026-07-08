@@ -118,5 +118,5 @@ const STAGE_MULTIPLIER: Record<number, number> = {
 /** Apply a stat stage (-6..+6). Stages do not apply to HP. */
 export function applyStage(value: number, stage: number): number {
   if (stage < -6 || stage > 6) throw new RangeError(`Stage must be -6..6, got ${stage}`);
-  return Math.floor(value * STAGE_MULTIPLIER[String(stage)]);
+  return Math.floor(value * STAGE_MULTIPLIER[stage]!);
 }

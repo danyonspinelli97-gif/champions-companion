@@ -52,6 +52,13 @@ they cache afterward. This is also what you run after any roster change.
     npm run web
   then open  http://localhost:5173
 
+--- VERIFY / LOCK IN (run before committing or deploying) -------------
+    npm test          # all workspace Vitest suites
+    npm run typecheck  # tsc --noEmit across web + team-builder + calc-core
+  (Both need a proper `npm install` on THIS machine — Vitest needs the
+   platform-native esbuild binary, so they can't run from a node_modules
+   copied off another OS.)
+
 --- REDEPLOY TO THE LIVE SITE (Netlify) -------------------------------
     npm run export:web
     npm run export:dex

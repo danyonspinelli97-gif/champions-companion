@@ -2,6 +2,7 @@ node_modules/
 dist/
 Documents/
 .superpowers/
+.netlify/
 *.log
 data/cache/*.sqlite
 data/cache/raw/
