@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
+import { nanoid } from "nanoid";
 import {
   checkTeam,
   legalSpeciesPool,
@@ -21,12 +22,13 @@ import type { ChampionsData } from "../data.js";
 import { emptySp, finalStatsFor, spTotal, STAT_KEYS, STAT_LABEL, typeColor } from "../champions.js";
 import { SpeciesCombobox, AlignmentSelect, SpEditor, Sprite } from "./shared.js";
 import { TeamsPanel } from "./TeamsPanel.js";
+import { X, Plus, Star, Gear, ChevronUp, ChevronDown } from "./icons.js";
 
 const prettify = (slug: string) =>
   slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
 function newMember(species: string): TeamMember {
-  return { species, item: "", ability: "", alignmentId: "serious", moves: [], sp: emptySp(), teraType: null };
+  return { id: nanoid(8), species, item: "", ability: "", alignmentId: "serious", moves: [], sp: emptySp(), teraType: null };
 }
 
 export function TeamBuilder({ data }: { data: ChampionsData }) {
@@ -106,7 +108,7 @@ export function TeamBuilder({ data }: { data: ChampionsData }) {
       <div className="tb-grid">
         {members.map((m, i) => (
           <MemberEditor
-            key={i}
+            key={m.id}
             index={i}
             member={m}
             data={data}
@@ -121,7 +123,7 @@ export function TeamBuilder({ data }: { data: ChampionsData }) {
 
         {members.length < 6 && (
           <button className="tb-add" onClick={() => add()}>
-            <span className="tb-add-plus">＋</span>
+            <span className="tb-add-plus"><Plus size={22} /></span>
             Add Pokémon
             <span className="muted">{members.length}/6</span>
           </button>
@@ -244,14 +246,14 @@ function MemberEditor({
   const addableMoves = (species?.movepool ?? []).filter((mv) => !member.moves.includes(mv));
 
   return (
-    <div className="tb-card">
+    <div className="tb-card" data-testid="member-card">
       <div className="tb-card-head">
         <Sprite species={species} size={52} />
         <div className="tb-head-main">
           <SpeciesCombobox species={pickList} value={member.species} onChange={(v) => onPatch({ species: v })} label="" hideSprite />
           <span className="tb-tags">{tags.map((t) => <span key={t} className="tag">{t}</span>)}</span>
         </div>
-        <button className="icon-btn" title="Remove" onClick={onRemove}>✕</button>
+        <button className="icon-btn" title="Remove" onClick={onRemove}><X size={14} /></button>
       </div>
 
       {meta && (
@@ -260,7 +262,7 @@ function MemberEditor({
           onClick={applyMetaSet}
           title="Fill this slot with the most common moves, item, ability, Stat Alignment and SP spread from usage data"
         >
-          ★ Apply recommended set
+          <Star size={14} /> Apply recommended set
         </button>
       )}
 
@@ -294,7 +296,7 @@ function MemberEditor({
           <ul className="move-list">
             {member.moves.map((mv) => (
               <li key={mv}>
-                <button className="icon-btn sm" onClick={() => toggleMove(mv)} title="Remove move">✕</button>
+                <button className="icon-btn sm" onClick={() => toggleMove(mv)} title="Remove move"><X size={12} /></button>
                 <span>{prettify(mv)}</span>
               </li>
             ))}
@@ -337,7 +339,7 @@ function MemberEditor({
       </div>
 
       <div className="tb-foot">
-        <button className="ghost" onClick={() => setOpen((o) => !o)}>⚙ Customize spread {open ? "▲" : "▼"}</button>
+        <button className="ghost" onClick={() => setOpen((o) => !o)}><Gear size={14} /> Customize spread {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</button>
         <div className="tb-foot-right">
           <select value={member.teraType ?? "none"} onChange={(e) => onPatch({ teraType: e.target.value === "none" ? null : e.target.value })} title="Tera type">
             <option value="none">Tera: none</option>

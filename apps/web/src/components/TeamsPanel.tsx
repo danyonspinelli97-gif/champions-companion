@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { nanoid } from "nanoid";
 import type { TeamMember } from "@champions/team-builder";
 import { useAuth } from "../lib/auth.js";
 import { authConfigured } from "../lib/supabase.js";
 import { listTeams, saveTeam, deleteTeam, MAX_TEAMS, type SavedTeam } from "../lib/teams.js";
+import { X } from "./icons.js";
 
 export function TeamsPanel({
   members,
@@ -137,10 +139,20 @@ function SavedTeams({
         <ul className="saved-list">
           {teams.map((t) => (
             <li key={t.id}>
-              <button className="ghost" onClick={() => onLoad(structuredClone(t.data))} title="Load into builder">
+              <button
+                className="ghost"
+                onClick={() =>
+                  onLoad(
+                    structuredClone(t.data).map((m: TeamMember) => ({ ...m, id: m.id ?? nanoid(8) }))
+                  )
+                }
+                title="Load into builder"
+              >
                 {t.name} <span className="muted">({t.data.length})</span>
               </button>
-              <button className="icon-btn sm" title="Delete" onClick={() => doDelete(t.id)}>✕</button>
+              <button className="icon-btn sm" title="Delete" onClick={() => doDelete(t.id)}>
+                <X size={12} />
+              </button>
             </li>
           ))}
         </ul>

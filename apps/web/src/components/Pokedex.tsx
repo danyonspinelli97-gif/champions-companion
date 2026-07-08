@@ -25,7 +25,7 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: "spd", label: "SpD" },
 ];
 
-export function Pokedex({ data }: { data: ChampionsData }) {
+export function Pokedex({ data, onOpenDetail }: { data: ChampionsData; onOpenDetail: (slug: string) => void }) {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<SortKey>("num");
   const [type, setType] = useState<string | null>(null);
@@ -127,7 +127,19 @@ export function Pokedex({ data }: { data: ChampionsData }) {
 
       <div className="dex-grid">
         {rows.map((s) => (
-          <article className="dex-card" key={s.name}>
+          <article
+            className="dex-card"
+            key={s.name}
+            role="button"
+            tabIndex={0}
+            onClick={() => onOpenDetail(s.name)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onOpenDetail(s.name);
+              }
+            }}
+          >
             <div className="dex-card-top">
               <span className="dex-num">{s.num ? pad(s.num) : ""}</span>
               {inSet(s, mbSet) && <span className="badge-mb">{regCode(data.ruleset.name)}</span>}

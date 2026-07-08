@@ -1,6 +1,7 @@
 node_modules/
 dist/
 Documents/
+.superpowers/
 *.log
 data/cache/*.sqlite
 data/cache/raw/

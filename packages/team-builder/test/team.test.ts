@@ -83,6 +83,7 @@ const cfg = {
 } as unknown as RulesetConfig;
 
 const legalChomp = {
+  id: "m1",
   species: "garchomp",
   item: "life-orb",
   ability: "rough-skin",
@@ -184,6 +185,7 @@ describe("team analysis", () => {
     members: [
       legalChomp,
       {
+        id: "m2",
         species: "torkoal",
         ability: "drought",
         alignmentId: "brave",
