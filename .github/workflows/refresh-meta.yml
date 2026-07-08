@@ -25,10 +25,12 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        # Run from the single web package so netlify-cli doesn't try (and fail)
-        # to pick a project out of the npm-workspaces monorepo root.
-        working-directory: apps/web
-        run: npx --yes netlify-cli deploy --dir=dist --prod
+        # The previous step already built the app, so --no-build makes this a
+        # pure upload of the prebuilt dir. Without it, netlify-cli runs the
+        # site's UI-configured build pipeline — which fails on the workspaces
+        # monorepo (project ambiguity + doubled publish path) and would burn
+        # Netlify build minutes we deliberately avoid.
+        run: npx --yes netlify-cli deploy --dir=apps/web/dist --prod --no-build
       - name: Commit refreshed meta
         run: |
           git config user.name "meta-bot"
