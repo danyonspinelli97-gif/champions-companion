@@ -280,6 +280,12 @@ own teams via row-level security, capped at 5.
    create policy "own teams: insert" on teams for insert with check (auth.uid() = user_id);
    create policy "own teams: delete" on teams for delete using (auth.uid() = user_id);
 
+   -- Grant table access to the logged-in role. Supabase usually auto-grants this
+   -- on new public tables, but if it doesn't you get "permission denied for
+   -- table teams" (a GRANT error, checked before RLS). RLS above still limits
+   -- each user to their own rows.
+   grant select, insert, delete on table teams to authenticated;
+
    -- Enforce the 5-team cap server-side too (not just in the UI).
    create or replace function enforce_team_limit() returns trigger as $$
    begin
