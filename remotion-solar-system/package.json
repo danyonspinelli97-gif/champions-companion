@@ -1,0 +1,25 @@
+{
+  "name": "remotion-solar-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A 30-second stylised solar system animation built with Remotion.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "remotion studio",
+    "studio": "remotion studio",
+    "render": "remotion render SolarSystem out/solar-system.mp4",
+    "still": "remotion still SolarSystem out/frame.png",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.5.0"
+  }
+}
