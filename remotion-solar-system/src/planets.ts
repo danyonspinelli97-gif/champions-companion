@@ -1,100 +1,178 @@
-// Stylised solar-system layout. Real astronomical scales are impossible to show
-// on a single screen, so sizes, orbit radii and orbital periods are all
-// artistic approximations chosen so that everything fits inside 1920x1080 while
-// keeping the *correct ordering* (Mercury -> Neptune) and the correct qualitative
-// behaviour (inner planets orbit faster than outer ones).
+import { staticFile } from "remotion";
 
-export type Planet = {
+// ---------------------------------------------------------------------------
+// Realistic 3D solar-system model.
+//
+// Everything is in abstract "world units". Real astronomical sizes and
+// distances cannot share a screen, so sizes/orbits are *stylised* (compressed)
+// while the important qualities are kept faithful:
+//   - correct order Mercury -> Neptune
+//   - correct relative size ranking (gas giants >> terrestrials)
+//   - inner planets orbit faster than outer ones
+//   - real NASA-derived surface texture maps, axial tilts, ring systems
+// ---------------------------------------------------------------------------
+
+export type PlanetSpec = {
   name: string;
-  /** Orbit radius in px from the Sun at the reference (scale 1) zoom level. */
+  /** Equirectangular colour map (public/textures/*). */
+  map: string;
+  /** Optional bump/height map for surface relief. */
+  bumpMap?: string;
+  bumpScale?: number;
+  /** Rendered sphere radius in world units. */
+  size: number;
+  /** Orbit radius in world units. */
   orbitRadius: number;
-  /** Rendered planet radius in px. */
-  radius: number;
-  /** CSS colour for the planet body. */
-  color: string;
-  /** A lighter highlight colour used for the radial shading. */
-  highlight: string;
-  /** Seconds for one full orbit. Smaller = faster (inner planets are smaller). */
+  /** Seconds for one full revolution around the Sun. Smaller = faster. */
   periodSeconds: number;
-  /** Starting angle in degrees, so the planets don't all line up. */
+  /** Seconds for one axial spin. */
+  spinSeconds: number;
+  /** Axial tilt in degrees. */
+  axialTilt: number;
+  /** Starting orbital angle in degrees (so planets are spread out). */
   startAngle: number;
-  /** Saturn is the only ringed planet in this scene. */
-  hasRings?: boolean;
+  /** Base material roughness. */
+  roughness?: number;
+  /** Earth-only extras. */
+  cloudMap?: string;
+  specularMap?: string;
+  /** Rim atmosphere colour, if any. */
+  atmosphere?: string;
+  /** Saturn ring system. */
+  ring?: {
+    map: string;
+    innerScale: number; // × planet size
+    outerScale: number; // × planet size
+  };
 };
 
-// Order matters: this array is Mercury -> Neptune.
-export const PLANETS: Planet[] = [
+const tex = (f: string) => staticFile(`textures/${f}`);
+
+export const PLANETS: PlanetSpec[] = [
   {
     name: "Mercury",
-    orbitRadius: 115,
-    radius: 6,
-    color: "#9a8f86",
-    highlight: "#cfc6bd",
-    periodSeconds: 5,
+    map: tex("mercurymap.jpg"),
+    bumpMap: tex("mercurybump.jpg"),
+    bumpScale: 0.006,
+    size: 0.95,
+    orbitRadius: 16,
+    periodSeconds: 6,
+    spinSeconds: 14,
+    axialTilt: 0.03,
     startAngle: 20,
+    roughness: 1,
   },
   {
     name: "Venus",
-    orbitRadius: 152,
-    radius: 11,
-    color: "#d8a95f",
-    highlight: "#f6dca0",
-    periodSeconds: 8,
+    map: tex("venusmap.jpg"),
+    bumpMap: tex("venusbump.jpg"),
+    bumpScale: 0.005,
+    size: 1.5,
+    orbitRadius: 23,
+    periodSeconds: 9,
+    spinSeconds: 26, // Venus spins very slowly (and retrograde)
+    axialTilt: 177.4,
     startAngle: 200,
+    roughness: 1,
+    atmosphere: "#e8c88a",
   },
   {
     name: "Earth",
-    orbitRadius: 192,
-    radius: 12,
-    color: "#3d7fd0",
-    highlight: "#8fc6f2",
-    periodSeconds: 11,
+    map: tex("earth_atmos_2048.jpg"),
+    bumpMap: tex("earthbump1k.jpg"),
+    bumpScale: 0.02,
+    specularMap: tex("earth_specular_2048.jpg"),
+    cloudMap: tex("earthcloudmap.jpg"),
+    size: 1.6,
+    orbitRadius: 30,
+    periodSeconds: 12,
+    spinSeconds: 10,
+    axialTilt: 23.4,
     startAngle: 110,
+    roughness: 0.85,
+    atmosphere: "#5b8fd6",
   },
   {
     name: "Mars",
-    orbitRadius: 232,
-    radius: 9,
-    color: "#c1502e",
-    highlight: "#e88a63",
-    periodSeconds: 14,
+    map: tex("marsmap1k.jpg"),
+    bumpMap: tex("marsbump1k.jpg"),
+    bumpScale: 0.02,
+    size: 1.15,
+    orbitRadius: 37,
+    periodSeconds: 15,
+    spinSeconds: 10.3,
+    axialTilt: 25.2,
     startAngle: 310,
+    roughness: 1,
+    atmosphere: "#d98a5a",
   },
   {
     name: "Jupiter",
-    orbitRadius: 300,
-    radius: 26,
-    color: "#c39a6b",
-    highlight: "#e7c79a",
-    periodSeconds: 19,
+    map: tex("jupitermap.jpg"),
+    size: 4.3,
+    orbitRadius: 48,
+    periodSeconds: 22,
+    spinSeconds: 4.5, // fastest spinner
+    axialTilt: 3.1,
     startAngle: 60,
+    roughness: 0.9,
   },
   {
     name: "Saturn",
-    orbitRadius: 358,
-    radius: 21,
-    color: "#d9bd7f",
-    highlight: "#f2dda8",
-    periodSeconds: 24,
+    map: tex("saturnmap.jpg"),
+    size: 3.6,
+    orbitRadius: 59,
+    periodSeconds: 28,
+    spinSeconds: 5,
+    axialTilt: 26.7,
     startAngle: 250,
-    hasRings: true,
+    roughness: 0.9,
+    ring: {
+      map: tex("saturnringcolor.jpg"),
+      innerScale: 1.28,
+      outerScale: 2.3,
+    },
   },
   {
     name: "Uranus",
-    orbitRadius: 400,
-    radius: 15,
-    color: "#8fd3d8",
-    highlight: "#c4eef0",
-    periodSeconds: 29,
+    map: tex("uranusmap.jpg"),
+    size: 2.5,
+    orbitRadius: 67,
+    periodSeconds: 34,
+    spinSeconds: 7,
+    axialTilt: 97.8, // rolls on its side
     startAngle: 150,
+    roughness: 0.7,
+    atmosphere: "#a7e0e6",
   },
   {
     name: "Neptune",
-    orbitRadius: 438,
-    radius: 14,
-    color: "#3f5fd6",
-    highlight: "#7f96ef",
-    periodSeconds: 34,
+    map: tex("neptunemap.jpg"),
+    size: 2.4,
+    orbitRadius: 74,
+    periodSeconds: 40,
+    spinSeconds: 7.5,
+    axialTilt: 28.3,
     startAngle: 20,
+    roughness: 0.7,
+    atmosphere: "#4a6cf0",
   },
 ];
+
+export const SUN_SIZE = 8;
+export const SUN_MAP = tex("sunmap.jpg");
+
+/** World-space position of a planet's centre at a given time. */
+export const orbitalPosition = (
+  planet: PlanetSpec,
+  seconds: number,
+): [number, number, number] => {
+  const angle =
+    (planet.startAngle * Math.PI) / 180 +
+    (seconds / planet.periodSeconds) * Math.PI * 2;
+  return [
+    Math.cos(angle) * planet.orbitRadius,
+    0,
+    Math.sin(angle) * planet.orbitRadius,
+  ];
+};
